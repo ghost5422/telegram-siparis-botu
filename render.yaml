@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: telegram-siparis-botu
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: python main.py
+    envVars:
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: CHAT_ID
+        sync: false
+      - key: FIREBASE_URL
+        sync: false
