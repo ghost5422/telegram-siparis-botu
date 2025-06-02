@@ -1,40 +1,37 @@
 import os
 import requests
-from flask import Flask, request
+import time
+from keep_alive import keep_alive
 
-app = Flask(__name__)
+keep_alive()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
+FIREBASE_URL = os.getenv("FIREBASE_URL")
 
-def send_telegram_message(message):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": CHAT_ID,
-        "text": message,
-        "parse_mode": "HTML"
-    }
-    requests.post(url, data=payload)
+seen = set()
 
-@app.route("/", methods=["GET"])
-def home():
-    return "Telegram Bot Aktif ✅"
-
-@app.route("/notify", methods=["POST"])
-def notify():
-    data = request.json
-    if not data:
-        return {"error": "Veri yok"}, 400
-
-    # Örnek veri: { "name": "Berkay", "order": "1x Netflix, 1x Disney+", "total": "120₺" }
-    name = data.get("name", "İsimsiz")
-    order = data.get("order", "Sipariş yok")
-    total = data.get("total", "0₺")
-
-    message = f"📦 <b>Yeni Sipariş!</b>\n👤 Müşteri: {name}\n🛍 Ürünler: {order}\n💳 Tutar: {total}"
-    send_telegram_message(message)
-
-    return {"status": "Gönderildi"}, 200
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
+while True:
+    try:
+        response = requests.get(FIREBASE_URL)
+        data = response.json()
+        for key, order in data.items():
+            if key not in seen:
+                seen.add(key)
+                items = "\n".join([f"- {i['name']} x{i['quantity']} = ₺{i['price']*i['quantity']}" for i in order.get("items", [])])
+                total = sum(i['price'] * i['quantity'] for i in order.get("items", []))
+                text = f"""📦 Yeni Sipariş
+👤 {order['name']}
+📞 {order['phone']}
+📝 {order.get('note', '')}
+{items}
+💰 Toplam: ₺{total}
+🕒 {order.get('date', '')}"""
+                requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", data={
+                    "chat_id": CHAT_ID,
+                    "text": text
+                })
+        time.sleep(10)
+    except Exception as e:
+        print("Hata:", e)
+        time.sleep(10)
