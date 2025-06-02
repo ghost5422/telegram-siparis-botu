@@ -1,6 +1,7 @@
 import requests
 import time
-
+from keep_alive import keep_alive
+keep_alive()
 FIREBASE_URL = "https://onlinesiparis-2cf91-default-rtdb.europe-west1.firebasedatabase.app/orders.json"
 TELEGRAM_TOKEN = "8125878519:AAFyTh0zwt7pfQeALhVUmL_ejbwWNxFGyuk"
 CHAT_ID = "1642514642"
