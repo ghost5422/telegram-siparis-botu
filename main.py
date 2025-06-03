@@ -1,21 +1,6 @@
 import requests
 import time
-from flask import Flask
-from threading import Thread
-
-# --- Flask server başlatılıyor ---
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot aktif 🟢"
-
-def run():
-    app.run(host='0.0.0.0', port=8080)
-
-def keep_alive():
-    t = Thread(target=run)
-    t.start()
+from keep_alive import keep_alive
 
 # --- Bot ayarları ---
 FIREBASE_URL = "https://onlinesiparis-2cf91-default-rtdb.europe-west1.firebasedatabase.app/orders.json"
