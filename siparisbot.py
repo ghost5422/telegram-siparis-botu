@@ -1,12 +1,32 @@
 import requests
 import time
+from flask import Flask
+from threading import Thread
 
+# --- Flask server başlatılıyor ---
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot aktif 🟢"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
+# --- Bot ayarları ---
 FIREBASE_URL = "https://onlinesiparis-2cf91-default-rtdb.europe-west1.firebasedatabase.app/orders.json"
 TELEGRAM_TOKEN = "8125878519:AAGT4j_feJAWqSVd7yFNqIvHyN-tFwS6g0M"
 CHAT_ID = "1642514642"
-
 seen = set()
 
+# --- Keep Alive başlat ---
+keep_alive()
+
+# --- Bot sonsuz döngüde çalışıyor ---
 while True:
     try:
         response = requests.get(FIREBASE_URL)
